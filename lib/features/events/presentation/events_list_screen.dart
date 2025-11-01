@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reis/core/theme/retro_theme.dart';
+import 'package:reis/core/services/backup_service.dart';
 import 'package:reis/features/events/presentation/capture_home_screen.dart';
 import 'package:reis/features/events/presentation/events_provider.dart';
 import 'package:reis/features/events/presentation/widgets/event_list_item.dart';
@@ -19,6 +20,11 @@ class EventsListScreen extends ConsumerWidget {
         title: const Text('reis'),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.backup_outlined),
+            onPressed: () => _handleBackup(context),
+            tooltip: 'Backup & Share',
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
@@ -284,5 +290,38 @@ class EventsListScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleBackup(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Text('Creating backup...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await BackupService.shareBackup();
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup failed: $e'),
+            backgroundColor: RetroTheme.dustyRose,
+          ),
+        );
+      }
+    }
   }
 }
