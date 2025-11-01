@@ -85,6 +85,11 @@ class EventListItem extends StatelessWidget {
               _buildVideoPreview(context),
             ],
 
+            if (event.type == CaptureType.sketch) ...[
+              const SizedBox(height: 16),
+              _buildSketchPreview(),
+            ],
+
             if (event.type == CaptureType.text) ...[
               const SizedBox(height: 16),
               _buildTextNote(context),
@@ -489,9 +494,29 @@ class EventListItem extends StatelessWidget {
         return 'RATING';
       case CaptureType.video:
         return 'VIDEO';
+      case CaptureType.sketch:
+        return 'SKETCH';
       case CaptureType.imported:
         return 'IMPORTED';
     }
+  }
+
+  Widget _buildSketchPreview() {
+    final filePath = event.data['filePath'] as String?;
+    if (filePath == null) return const SizedBox.shrink();
+
+    final file = File(filePath);
+    if (!file.existsSync()) return const SizedBox.shrink();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(2),
+      child: Image.file(
+        file,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      ),
+    );
   }
   
   Widget _buildDistanceIndicator() {

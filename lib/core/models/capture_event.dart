@@ -10,6 +10,7 @@ enum CaptureType {
   text,
   rating,
   video,
+  sketch,
   imported,
 }
 

@@ -344,6 +344,8 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
         return 'NOTE';
       case CaptureType.rating:
         return 'RATING';
+      case CaptureType.sketch:
+        return 'SKETCH';
       case CaptureType.imported:
         return 'IMPORTED';
     }

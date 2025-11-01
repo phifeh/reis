@@ -640,6 +640,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  perfect_freehand:
+    dependency: "direct main"
+    description:
+      name: perfect_freehand
+      sha256: "399c16dc35a6eb1dee4d9a2c638ff0fe71ebb5e8980ab41261bf4306dafaa4af"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.0"
   permission_handler:
     dependency: "direct main"
     description:

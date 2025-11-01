@@ -32,5 +32,6 @@ const _$CaptureTypeEnumMap = {
   CaptureType.text: 'text',
   CaptureType.rating: 'rating',
   CaptureType.video: 'video',
+  CaptureType.sketch: 'sketch',
   CaptureType.imported: 'imported',
 };

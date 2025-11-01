@@ -6,6 +6,7 @@ import 'package:reis/features/events/presentation/video_screen.dart';
 import 'package:reis/features/events/presentation/audio_record_screen.dart';
 import 'package:reis/features/events/presentation/text_note_screen.dart';
 import 'package:reis/features/events/presentation/rating_screen.dart';
+import 'package:reis/features/events/presentation/sketch/sketch_note_screen.dart';
 
 class CaptureHomeScreen extends ConsumerStatefulWidget {
   const CaptureHomeScreen({super.key});
@@ -21,7 +22,7 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -62,6 +63,10 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
               text: 'AUDIO',
             ),
             Tab(
+              icon: Icon(Icons.draw_outlined),
+              text: 'SKETCH',
+            ),
+            Tab(
               icon: Icon(Icons.edit_note_outlined),
               text: 'NOTE',
             ),
@@ -78,6 +83,7 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
           CameraScreen(),
           VideoScreen(),
           AudioRecordScreen(),
+          SketchNoteScreen(),
           TextNoteScreen(),
           RatingScreen(),
         ],
