@@ -12,6 +12,7 @@ class EventsNotifier extends StateNotifier<AsyncValue<List<CaptureEvent>>> {
   Future<void> _loadEvents() async {
     try {
       final events = await captureEventRepository.findAll();
+      events.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       state = AsyncValue.data(events);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -24,6 +25,11 @@ class EventsNotifier extends StateNotifier<AsyncValue<List<CaptureEvent>>> {
   }
 
   Future<void> refresh() async {
+    await _loadEvents();
+  }
+  
+  Future<void> deleteEvent(String eventId) async {
+    await captureEventRepository.delete(eventId);
     await _loadEvents();
   }
 }

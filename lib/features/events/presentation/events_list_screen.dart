@@ -56,7 +56,69 @@ class EventsListScreen extends ConsumerWidget {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: EventListItem(event: events[index]),
+                      child: Dismissible(
+                        key: Key(events[index].id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 24),
+                          decoration: BoxDecoration(
+                            color: RetroTheme.dustyRose,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                        confirmDismiss: (direction) async {
+                          return await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                backgroundColor: RetroTheme.softCream,
+                                title: Text(
+                                  'Delete Event?',
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontFamily: 'Spectral',
+                                  ),
+                                ),
+                                content: Text(
+                                  'This will permanently delete this memory.',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(true),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: RetroTheme.dustyRose,
+                                    ),
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              );
+                            },
+                          ) ?? false;
+                        },
+                        onDismissed: (direction) async {
+                          await ref.read(eventsProvider.notifier).deleteEvent(events[index].id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Event deleted'),
+                                backgroundColor: RetroTheme.deepTaupe,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        child: EventListItem(event: events[index]),
+                      ),
                     ),
                     childCount: events.length,
                   ),
@@ -97,7 +159,8 @@ class EventsListScreen extends ConsumerWidget {
           );
           ref.read(eventsProvider.notifier).refresh();
         },
-        child: const Icon(Icons.camera_alt, size: 28),
+        backgroundColor: RetroTheme.vintageOrange,
+        child: const Icon(Icons.add, size: 32),
       ),
     );
   }
