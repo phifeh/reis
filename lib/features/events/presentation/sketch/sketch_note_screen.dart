@@ -115,6 +115,61 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
     }
   }
 
+  void _onPointerDown(PointerDownEvent event) {
+    setState(() {
+      _currentStroke = [
+        DrawingPoint(
+          offset: event.localPosition,
+          pressure: event.pressure.clamp(0.0, 1.0),
+          timestamp: DateTime.now(),
+        ),
+      ];
+    });
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (_currentStroke != null) {
+      setState(() {
+        _currentStroke!.add(
+          DrawingPoint(
+            offset: event.localPosition,
+            pressure: event.pressure.clamp(0.0, 1.0),
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (_currentStroke != null && _currentStroke!.isNotEmpty) {
+      setState(() {
+        _layers[_currentLayerIndex].strokes.add(
+          Stroke(
+            points: _currentStroke!,
+            color: _currentColor,
+            width: _currentWidth,
+            tool: _currentTool,
+          ),
+        );
+        _currentStroke = null;
+        
+        // Add to history
+        _history.add(List.from(_layers.map((l) => SketchLayer(
+          strokes: List.from(l.strokes),
+          visible: l.visible,
+          opacity: l.opacity,
+          name: l.name,
+        ))));
+        _historyIndex = _history.length - 1;
+        if (_history.length > 50) {
+          _history.removeAt(0);
+          _historyIndex--;
+        }
+      });
+    }
+  }
+
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _currentStroke = [
@@ -352,10 +407,11 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
       body: Stack(
         children: [
           // Drawing canvas
-          GestureDetector(
-            onPanStart: _onPanStart,
-            onPanUpdate: _onPanUpdate,
-            onPanEnd: _onPanEnd,
+          Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: _onPointerDown,
+            onPointerMove: _onPointerMove,
+            onPointerUp: _onPointerUp,
             child: Container(
               color: Colors.white,
               child: CustomPaint(
