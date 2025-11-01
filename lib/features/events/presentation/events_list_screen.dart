@@ -117,7 +117,10 @@ class EventsListScreen extends ConsumerWidget {
                             );
                           }
                         },
-                        child: EventListItem(event: events[index]),
+                        child: EventListItem(
+                          event: events[index],
+                          previousEvent: index < events.length - 1 ? events[index + 1] : null,
+                        ),
                       ),
                     ),
                     childCount: events.length,

@@ -1,12 +1,19 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:reis/core/models/capture_event.dart';
 import 'package:reis/core/theme/retro_theme.dart';
+import '../edit_event_screen.dart';
 
 class EventListItem extends StatelessWidget {
   final CaptureEvent event;
+  final CaptureEvent? previousEvent;
 
-  const EventListItem({super.key, required this.event});
+  const EventListItem({
+    super.key,
+    required this.event,
+    this.previousEvent,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +49,13 @@ class EventListItem extends StatelessWidget {
                         color: RetroTheme.sageBrown,
                       ),
                 ),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 18),
+                  color: RetroTheme.sageBrown,
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(),
+                  onPressed: () => _editEvent(context),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -54,6 +68,12 @@ class EventListItem extends StatelessWidget {
                     letterSpacing: 1.5,
                   ),
             ),
+            
+            // Distance from previous event
+            if (previousEvent?.location != null && event.location != null) ...[
+              const SizedBox(height: 8),
+              _buildDistanceIndicator(),
+            ],
 
             if (event.type == CaptureType.photo) ...[
               const SizedBox(height: 16),
@@ -473,4 +493,106 @@ class EventListItem extends StatelessWidget {
         return 'IMPORTED';
     }
   }
+  
+  Widget _buildDistanceIndicator() {
+    if (previousEvent?.location == null || event.location == null) {
+      return const SizedBox.shrink();
+    }
+    
+    final prevLoc = previousEvent!.location!;
+    final currLoc = event.location!;
+    
+    // Calculate distance using Haversine formula
+    final distance = _calculateDistance(
+      prevLoc.latitude,
+      prevLoc.longitude,
+      currLoc.latitude,
+      currLoc.longitude,
+    );
+    
+    Color distanceColor;
+    IconData distanceIcon;
+    String distanceText;
+    
+    if (distance < 0.1) {
+      // Less than 100m - same location
+      distanceColor = RetroTheme.mutedTeal;
+      distanceIcon = Icons.location_on;
+      distanceText = '${(distance * 1000).toStringAsFixed(0)}m';
+    } else if (distance < 1.0) {
+      // 100m - 1km
+      distanceColor = RetroTheme.vintageOrange;
+      distanceIcon = Icons.directions_walk;
+      distanceText = '${(distance * 1000).toStringAsFixed(0)}m';
+    } else {
+      // Over 1km
+      distanceColor = RetroTheme.dustyRose;
+      distanceIcon = Icons.directions_car;
+      distanceText = '${distance.toStringAsFixed(1)}km';
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: distanceColor.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(
+          color: distanceColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(distanceIcon, size: 12, color: distanceColor),
+          const SizedBox(width: 4),
+          Text(
+            distanceText,
+            style: TextStyle(
+              fontFamily: RetroTheme.monoFont,
+              color: distanceColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'from previous',
+            style: TextStyle(
+              color: distanceColor.withOpacity(0.8),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371; // km
+    
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(lat1)) * cos(_toRadians(lat2)) *
+        sin(dLon / 2) * sin(dLon / 2);
+    
+    final c = 2 * asin(sqrt(a));
+    
+    return earthRadius * c;
+  }
+  
+  double _toRadians(double degrees) {
+    return degrees * pi / 180.0;
+  }
+  
+  void _editEvent(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditEventScreen(event: event),
+      ),
+    );
+  }
 }
+
