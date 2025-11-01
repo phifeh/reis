@@ -598,50 +598,46 @@ class _SketchCanvasState extends State<_SketchCanvas> {
   List<DrawingPoint>? _currentStroke;
 
   void _onPointerDown(PointerDownEvent event) {
-    setState(() {
-      _currentStroke = [
+    _currentStroke = [
+      DrawingPoint(
+        offset: event.localPosition,
+        pressure: event.pressure.clamp(0.0, 1.0),
+        timestamp: DateTime.now(),
+      ),
+    ];
+    setState(() {});
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (_currentStroke != null) {
+      _currentStroke!.add(
         DrawingPoint(
           offset: event.localPosition,
           pressure: event.pressure.clamp(0.0, 1.0),
           timestamp: DateTime.now(),
         ),
-      ];
-    });
-  }
-
-  void _onPointerMove(PointerMoveEvent event) {
-    if (_currentStroke != null) {
-      setState(() {
-        _currentStroke!.add(
-          DrawingPoint(
-            offset: event.localPosition,
-            pressure: event.pressure.clamp(0.0, 1.0),
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
+      );
+      setState(() {});
     }
   }
 
   void _onPointerUp(PointerUpEvent event) {
     if (_currentStroke != null && _currentStroke!.isNotEmpty) {
       final stroke = Stroke(
-        points: _currentStroke!,
+        points: List.from(_currentStroke!),
         color: widget.currentColor,
         width: widget.currentWidth,
         tool: widget.currentTool,
       );
       widget.onStrokeComplete(stroke);
-      setState(() {
-        _currentStroke = null;
-      });
+      _currentStroke = null;
+      setState(() {});
     }
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
-    setState(() {
-      _currentStroke = null;
-    });
+    _currentStroke = null;
+    setState(() {});
   }
 
   @override
@@ -654,15 +650,19 @@ class _SketchCanvasState extends State<_SketchCanvas> {
       onPointerCancel: _onPointerCancel,
       child: Container(
         color: Colors.white,
-        child: CustomPaint(
-          painter: SketchPainter(
-            layers: widget.layers,
-            currentStroke: _currentStroke,
-            currentTool: widget.currentTool,
-            currentColor: widget.currentColor,
-            currentWidth: widget.currentWidth,
+        child: RepaintBoundary(
+          child: CustomPaint(
+            painter: SketchPainter(
+              layers: widget.layers,
+              currentStroke: _currentStroke,
+              currentTool: widget.currentTool,
+              currentColor: widget.currentColor,
+              currentWidth: widget.currentWidth,
+            ),
+            size: Size.infinite,
+            isComplex: true,
+            willChange: true,
           ),
-          size: Size.infinite,
         ),
       ),
     );

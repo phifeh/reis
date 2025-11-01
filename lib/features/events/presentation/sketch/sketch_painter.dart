@@ -85,36 +85,31 @@ class SketchPainter extends CustomPainter {
   void _drawCurrentStroke(Canvas canvas) {
     if (currentStroke == null || currentStroke!.isEmpty) return;
 
-    final options = StrokeOptions(
-      size: currentWidth,
-      thinning: currentTool == DrawingTool.pencil ? 0.6 : 0.1,
-      smoothing: 0.3,
-      streamline: 0.3,
-      simulatePressure: false,
-    );
-
-    final points = currentStroke!.map((p) {
-      return Point(
-        p.offset.dx,
-        p.offset.dy,
-        p.pressure,
-      );
-    }).toList();
-
-    final outlinePoints = getStroke(points, options: options);
-
-    if (outlinePoints.isEmpty) return;
-
-    final path = Path();
-    path.moveTo(outlinePoints.first.dx, outlinePoints.first.dy);
-    for (int i = 1; i < outlinePoints.length; i++) {
-      path.lineTo(outlinePoints[i].dx, outlinePoints[i].dy);
+    // Use simpler rendering for real-time feedback
+    if (currentStroke!.length == 1) {
+      // Draw a single point
+      final paint = Paint()
+        ..color = currentTool.applyToolEffect(currentColor, 1.0)
+        ..style = PaintingStyle.fill
+        ..strokeCap = StrokeCap.round;
+      
+      canvas.drawCircle(currentStroke!.first.offset, currentWidth / 2, paint);
+      return;
     }
-    path.close();
+
+    // For performance, use a simplified path for real-time drawing
+    final path = Path();
+    path.moveTo(currentStroke!.first.offset.dx, currentStroke!.first.offset.dy);
+    
+    for (int i = 1; i < currentStroke!.length; i++) {
+      final point = currentStroke![i];
+      path.lineTo(point.offset.dx, point.offset.dy);
+    }
 
     final paint = Paint()
       ..color = currentTool.applyToolEffect(currentColor, 1.0)
-      ..style = PaintingStyle.fill
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = currentWidth * (currentStroke!.last.pressure * 0.5 + 0.5)
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
