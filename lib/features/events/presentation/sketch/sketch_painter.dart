@@ -42,9 +42,9 @@ class SketchPainter extends CustomPainter {
 
     final options = StrokeOptions(
       size: stroke.width,
-      thinning: stroke.tool == DrawingTool.pencil ? 0.7 : 0.2,
-      smoothing: 0.5,
-      streamline: 0.5,
+      thinning: stroke.tool == DrawingTool.pencil ? 0.6 : 0.1,
+      smoothing: 0.3,
+      streamline: 0.3,
       simulatePressure: false,
     );
 
@@ -87,9 +87,9 @@ class SketchPainter extends CustomPainter {
 
     final options = StrokeOptions(
       size: currentWidth,
-      thinning: currentTool == DrawingTool.pencil ? 0.7 : 0.2,
-      smoothing: 0.5,
-      streamline: 0.5,
+      thinning: currentTool == DrawingTool.pencil ? 0.6 : 0.1,
+      smoothing: 0.3,
+      streamline: 0.3,
       simulatePressure: false,
     );
 

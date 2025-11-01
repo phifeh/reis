@@ -25,6 +25,9 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
   final List<SketchLayer> _layers = [SketchLayer(name: 'Layer 1')];
   int _currentLayerIndex = 0;
   List<DrawingPoint>? _currentStroke;
+  
+  // Use ValueNotifier for real-time drawing performance
+  final ValueNotifier<int> _strokeUpdateNotifier = ValueNotifier(0);
 
   DrawingTool _currentTool = DrawingTool.pen;
   Color _currentColor = Colors.black;
@@ -115,6 +118,12 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    _strokeUpdateNotifier.dispose();
+    super.dispose();
+  }
+
   void _onPointerDown(PointerDownEvent event) {
     setState(() {
       _currentStroke = [
@@ -129,15 +138,16 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
 
   void _onPointerMove(PointerMoveEvent event) {
     if (_currentStroke != null) {
-      setState(() {
-        _currentStroke!.add(
-          DrawingPoint(
-            offset: event.localPosition,
-            pressure: event.pressure.clamp(0.0, 1.0),
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
+      // Add point without setState for better performance
+      _currentStroke!.add(
+        DrawingPoint(
+          offset: event.localPosition,
+          pressure: event.pressure.clamp(0.0, 1.0),
+          timestamp: DateTime.now(),
+        ),
+      );
+      // Notify only the painter to repaint
+      _strokeUpdateNotifier.value++;
     }
   }
 
@@ -424,15 +434,18 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
               onPointerCancel: _onPointerCancel,
               child: Container(
                 color: Colors.white,
-                child: CustomPaint(
-                  painter: SketchPainter(
-                    layers: _layers,
-                    currentStroke: _currentStroke,
-                    currentTool: _currentTool,
-                    currentColor: _currentColor,
-                    currentWidth: _currentWidth,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _strokeUpdateNotifier,
+                  builder: (context, _, __) => CustomPaint(
+                    painter: SketchPainter(
+                      layers: _layers,
+                      currentStroke: _currentStroke,
+                      currentTool: _currentTool,
+                      currentColor: _currentColor,
+                      currentWidth: _currentWidth,
+                    ),
+                    size: Size.infinite,
                   ),
-                  size: Size.infinite,
                 ),
               ),
             ),
