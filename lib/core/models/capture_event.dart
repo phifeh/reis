@@ -9,6 +9,7 @@ enum CaptureType {
   audio,
   text,
   rating,
+  video,
   imported,
 }
 

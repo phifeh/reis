@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reis/core/theme/retro_theme.dart';
 import 'package:reis/features/events/presentation/camera_screen.dart';
+import 'package:reis/features/events/presentation/video_screen.dart';
 import 'package:reis/features/events/presentation/audio_record_screen.dart';
 import 'package:reis/features/events/presentation/text_note_screen.dart';
 import 'package:reis/features/events/presentation/rating_screen.dart';
@@ -20,7 +21,7 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -71,6 +72,7 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
         controller: _tabController,
         children: const [
           CameraScreen(),
+          VideoScreen(),
           AudioRecordScreen(),
           TextNoteScreen(),
           RatingScreen(),

@@ -60,6 +60,11 @@ class EventListItem extends StatelessWidget {
               _buildPhotoPreview(),
             ],
 
+            if (event.type == CaptureType.video) ...[
+              const SizedBox(height: 16),
+              _buildVideoPreview(context),
+            ],
+
             if (event.type == CaptureType.text) ...[
               const SizedBox(height: 16),
               _buildTextNote(context),
@@ -160,6 +165,63 @@ class EventListItem extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildVideoPreview(BuildContext context) {
+    final filePath = event.data['filePath'] as String?;
+    final duration = event.data['duration'] as int? ?? 0;
+    final mins = duration ~/ 60;
+    final secs = duration % 60;
+    final durationText = '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (filePath != null && File(filePath).existsSync())
+            const Icon(
+              Icons.videocam,
+              color: Colors.white54,
+              size: 80,
+            )
+          else
+            const Icon(
+              Icons.videocam_off,
+              color: Colors.white24,
+              size: 80,
+            ),
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                durationText,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ),
+          const Icon(
+            Icons.play_circle_outline,
+            color: Colors.white,
+            size: 64,
+          ),
+        ],
       ),
     );
   }
@@ -405,6 +467,8 @@ class EventListItem extends StatelessWidget {
         return 'NOTE';
       case CaptureType.rating:
         return 'RATING';
+      case CaptureType.video:
+        return 'VIDEO';
       case CaptureType.imported:
         return 'IMPORTED';
     }

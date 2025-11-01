@@ -31,5 +31,6 @@ const _$CaptureTypeEnumMap = {
   CaptureType.audio: 'audio',
   CaptureType.text: 'text',
   CaptureType.rating: 'rating',
+  CaptureType.video: 'video',
   CaptureType.imported: 'imported',
 };

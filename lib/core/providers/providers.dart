@@ -7,6 +7,7 @@ import 'package:reis/core/services/capture_service.dart';
 import 'package:reis/core/services/moment_service.dart';
 import 'package:reis/core/services/moment_detection_service.dart';
 import 'package:reis/core/services/photo_capture_service.dart';
+import 'package:reis/core/services/video_capture_service.dart';
 import 'package:reis/core/services/battery_monitor_service.dart';
 import 'package:reis/core/services/power_profile_service.dart';
 import 'package:reis/core/services/background_location_service.dart';
@@ -41,6 +42,11 @@ final momentDetectionServiceProvider =
 final photoCaptureServiceProvider = Provider<PhotoCaptureService>((ref) {
   final repository = ref.watch(captureEventRepositoryProvider);
   return PhotoCaptureService(repository);
+});
+
+final videoCaptureServiceProvider = Provider<VideoCaptureService>((ref) {
+  final repository = ref.watch(captureEventRepositoryProvider);
+  return VideoCaptureService(repository);
 });
 
 final batteryMonitorServiceProvider = Provider<BatteryMonitorService>((ref) {
