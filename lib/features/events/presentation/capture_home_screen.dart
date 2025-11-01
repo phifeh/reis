@@ -54,6 +54,10 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
               text: 'PHOTO',
             ),
             Tab(
+              icon: Icon(Icons.videocam_outlined),
+              text: 'VIDEO',
+            ),
+            Tab(
               icon: Icon(Icons.mic_outlined),
               text: 'AUDIO',
             ),
