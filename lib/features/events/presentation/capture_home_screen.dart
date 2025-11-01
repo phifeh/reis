@@ -50,30 +50,12 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
             letterSpacing: 1.0,
           ),
           tabs: const [
-            Tab(
-              icon: Icon(Icons.camera_alt_outlined),
-              text: 'PHOTO',
-            ),
-            Tab(
-              icon: Icon(Icons.videocam_outlined),
-              text: 'VIDEO',
-            ),
-            Tab(
-              icon: Icon(Icons.mic_outlined),
-              text: 'AUDIO',
-            ),
-            Tab(
-              icon: Icon(Icons.draw_outlined),
-              text: 'SKETCH',
-            ),
-            Tab(
-              icon: Icon(Icons.edit_note_outlined),
-              text: 'NOTE',
-            ),
-            Tab(
-              icon: Icon(Icons.star_outline),
-              text: 'RATING',
-            ),
+            Tab(icon: Icon(Icons.camera_alt_outlined)),
+            Tab(icon: Icon(Icons.videocam_outlined)),
+            Tab(icon: Icon(Icons.mic_outlined)),
+            Tab(icon: Icon(Icons.draw_outlined)),
+            Tab(icon: Icon(Icons.edit_note_outlined)),
+            Tab(icon: Icon(Icons.star_outline)),
           ],
         ),
       ),
