@@ -12,8 +12,9 @@ class EventsNotifier extends StateNotifier<AsyncValue<List<CaptureEvent>>> {
   Future<void> _loadEvents() async {
     try {
       final events = await captureEventRepository.findAll();
-      events.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      state = AsyncValue.data(events);
+      final sortedEvents = List<CaptureEvent>.from(events);
+      sortedEvents.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      state = AsyncValue.data(sortedEvents);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
     }
