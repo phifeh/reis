@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reis/core/theme/retro_theme.dart';
+import 'package:reis/core/l10n/app_localizations.dart';
 import 'package:reis/core/services/backup_service.dart';
 import 'package:reis/features/events/presentation/capture_home_screen.dart';
 import 'package:reis/features/events/presentation/events_provider.dart';
@@ -13,17 +14,18 @@ class EventsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(eventsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: RetroTheme.softCream,
       appBar: AppBar(
-        title: const Text('reis'),
+        title: Text(l10n.appTitle),
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.backup_outlined),
             onPressed: () => _handleBackup(context),
-            tooltip: 'Backup & Share',
+            tooltip: l10n.backupData,
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -102,32 +104,33 @@ class EventsListScreen extends ConsumerWidget {
                           ),
                         ),
                         confirmDismiss: (direction) async {
+                          final l10n = AppLocalizations.of(context);
                           return await showDialog<bool>(
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 backgroundColor: RetroTheme.softCream,
                                 title: Text(
-                                  'Delete Event?',
+                                  l10n.deleteEvent,
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontFamily: 'Spectral',
                                   ),
                                 ),
                                 content: Text(
-                                  'This will permanently delete this memory.',
+                                  l10n.deleteConfirmation,
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(context).pop(false),
-                                    child: const Text('Cancel'),
+                                    child: Text(l10n.cancel),
                                   ),
                                   TextButton(
                                     onPressed: () => Navigator.of(context).pop(true),
                                     style: TextButton.styleFrom(
                                       foregroundColor: RetroTheme.dustyRose,
                                     ),
-                                    child: const Text('Delete'),
+                                    child: Text(l10n.delete),
                                   ),
                                 ],
                               );
@@ -135,11 +138,12 @@ class EventsListScreen extends ConsumerWidget {
                           ) ?? false;
                         },
                         onDismissed: (direction) async {
+                          final l10n = AppLocalizations.of(context);
                           await ref.read(eventsProvider.notifier).deleteEvent(events[index].id);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Event deleted'),
+                              SnackBar(
+                                content: Text(l10n.eventDeleted),
                                 backgroundColor: RetroTheme.deepTaupe,
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -173,7 +177,7 @@ class EventsListScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Loading memories...',
+                AppLocalizations.of(context).loading,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: RetroTheme.sageBrown,
                       fontStyle: FontStyle.italic,
@@ -198,6 +202,8 @@ class EventsListScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(48),
@@ -211,13 +217,13 @@ class EventsListScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'Your Journey Awaits',
+              l10n.noEvents,
               style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(
-              'Capture your first memory\nby pressing the camera button below',
+              l10n.startCapturing,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: RetroTheme.sageBrown,
                     height: 1.8,
@@ -293,15 +299,17 @@ class EventsListScreen extends ConsumerWidget {
   }
 
   Future<void> _handleBackup(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
+      builder: (context) => AlertDialog(
         content: Row(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 20),
-            Text('Creating backup...'),
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Text(l10n.creatingBackup),
           ],
         ),
       ),
@@ -317,7 +325,7 @@ class EventsListScreen extends ConsumerWidget {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Backup failed: $e'),
+            content: Text('${l10n.backupFailed}: $e'),
             backgroundColor: RetroTheme.dustyRose,
           ),
         );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reis/core/theme/retro_theme.dart';
+import 'package:reis/core/l10n/app_localizations.dart';
 import 'package:reis/features/explore/presentation/explore_provider.dart';
 import 'package:reis/features/explore/presentation/widgets/grouped_event_card.dart';
 import 'package:reis/features/explore/services/export_service.dart';
@@ -11,17 +12,18 @@ class ExploreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groupedEventsAsync = ref.watch(groupedEventsProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: RetroTheme.softCream,
       appBar: AppBar(
-        title: const Text('Explore'),
+        title: Text(l10n.explore),
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined),
             onPressed: () => _showExportOptions(context, ref),
-            tooltip: 'Export',
+            tooltip: l10n.export,
           ),
         ],
       ),
@@ -57,7 +59,7 @@ class ExploreScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Organizing memories...',
+                l10n.organizingMemories,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: RetroTheme.sageBrown,
                       fontStyle: FontStyle.italic,
@@ -77,7 +79,7 @@ class ExploreScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Error loading grouped events',
+                l10n.errorLoading,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 8),
@@ -94,6 +96,8 @@ class ExploreScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -105,7 +109,7 @@ class ExploreScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'No grouped memories yet',
+            l10n.noGroupedMemories,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontFamily: 'Spectral',
                   color: RetroTheme.sageBrown,
@@ -115,7 +119,7 @@ class ExploreScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              'Create some memories and they\'ll be organized here by time and location',
+              l10n.createMemoriesHint,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: RetroTheme.sageBrown.withOpacity(0.7),
                     fontStyle: FontStyle.italic,
@@ -129,6 +133,8 @@ class ExploreScreen extends ConsumerWidget {
   }
 
   void _showExportOptions(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: RetroTheme.softCream,
@@ -139,7 +145,7 @@ class ExploreScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Export Format',
+                l10n.exportFormat,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontFamily: 'Spectral',
                     ),
@@ -147,8 +153,8 @@ class ExploreScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.article_outlined),
-              title: const Text('Markdown'),
-              subtitle: const Text('Great for notes apps and GitHub'),
+              title: Text(l10n.markdown),
+              subtitle: Text(l10n.markdownDesc),
               onTap: () {
                 Navigator.pop(context);
                 _exportAsMarkdown(context, ref);
@@ -156,8 +162,8 @@ class ExploreScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.code_outlined),
-              title: const Text('JSON'),
-              subtitle: const Text('Technical export with all data'),
+              title: Text(l10n.json),
+              subtitle: Text(l10n.jsonDesc),
               onTap: () {
                 Navigator.pop(context);
                 _exportAsJson(context, ref);
@@ -165,8 +171,8 @@ class ExploreScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.text_snippet_outlined),
-              title: const Text('Plain Text'),
-              subtitle: const Text('Simple text format'),
+              title: Text(l10n.plainText),
+              subtitle: Text(l10n.plainTextDesc),
               onTap: () {
                 Navigator.pop(context);
                 _exportAsText(context, ref);
@@ -174,8 +180,8 @@ class ExploreScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.format_list_bulleted),
-              title: const Text('HTML'),
-              subtitle: const Text('Rich formatting for web and email'),
+              title: Text(l10n.html),
+              subtitle: Text(l10n.htmlDesc),
               onTap: () {
                 Navigator.pop(context);
                 _exportAsHtml(context, ref);
@@ -190,21 +196,22 @@ class ExploreScreen extends ConsumerWidget {
 
   Future<void> _exportAsMarkdown(BuildContext context, WidgetRef ref) async {
     final exportService = ref.read(exportServiceProvider);
+    final l10n = AppLocalizations.of(context);
     final result = await exportService.exportAsMarkdown();
     
     if (context.mounted) {
       if (result) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exported as Markdown'),
+          SnackBar(
+            content: Text(l10n.exportedAsMarkdown),
             backgroundColor: RetroTheme.mutedTeal,
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Export failed'),
+          SnackBar(
+            content: Text(l10n.exportFailed),
             backgroundColor: RetroTheme.dustyRose,
             behavior: SnackBarBehavior.floating,
           ),
@@ -215,21 +222,22 @@ class ExploreScreen extends ConsumerWidget {
 
   Future<void> _exportAsJson(BuildContext context, WidgetRef ref) async {
     final exportService = ref.read(exportServiceProvider);
+    final l10n = AppLocalizations.of(context);
     final result = await exportService.exportAsJson();
     
     if (context.mounted) {
       if (result) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exported as JSON'),
+          SnackBar(
+            content: Text(l10n.exportedAsJson),
             backgroundColor: RetroTheme.mutedTeal,
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Export failed'),
+          SnackBar(
+            content: Text(l10n.exportFailed),
             backgroundColor: RetroTheme.dustyRose,
             behavior: SnackBarBehavior.floating,
           ),
@@ -240,21 +248,22 @@ class ExploreScreen extends ConsumerWidget {
 
   Future<void> _exportAsText(BuildContext context, WidgetRef ref) async {
     final exportService = ref.read(exportServiceProvider);
+    final l10n = AppLocalizations.of(context);
     final result = await exportService.exportAsText();
     
     if (context.mounted) {
       if (result) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exported as Text'),
+          SnackBar(
+            content: Text(l10n.exportedAsText),
             backgroundColor: RetroTheme.mutedTeal,
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Export failed'),
+          SnackBar(
+            content: Text(l10n.exportFailed),
             backgroundColor: RetroTheme.dustyRose,
             behavior: SnackBarBehavior.floating,
           ),
@@ -265,21 +274,22 @@ class ExploreScreen extends ConsumerWidget {
 
   Future<void> _exportAsHtml(BuildContext context, WidgetRef ref) async {
     final exportService = ref.read(exportServiceProvider);
+    final l10n = AppLocalizations.of(context);
     final result = await exportService.exportAsHtml();
     
     if (context.mounted) {
       if (result) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exported as HTML'),
+          SnackBar(
+            content: Text(l10n.exportedAsHtml),
             backgroundColor: RetroTheme.mutedTeal,
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Export failed'),
+          SnackBar(
+            content: Text(l10n.exportFailed),
             backgroundColor: RetroTheme.dustyRose,
             behavior: SnackBarBehavior.floating,
           ),

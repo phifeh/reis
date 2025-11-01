@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reis/core/theme/retro_theme.dart';
+import 'package:reis/core/l10n/app_localizations.dart';
 import 'package:reis/features/events/presentation/camera_screen.dart';
 import 'package:reis/features/events/presentation/video_screen.dart';
 import 'package:reis/features/events/presentation/audio_record_screen.dart';
@@ -33,10 +34,12 @@ class _CaptureHomeScreenState extends ConsumerState<CaptureHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: RetroTheme.softCream,
       appBar: AppBar(
-        title: const Text('Capture Memory'),
+        title: Text(l10n.captureMemory),
         bottom: TabBar(
           controller: _tabController,
           labelColor: RetroTheme.vintageOrange,
