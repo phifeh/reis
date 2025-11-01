@@ -24,10 +24,6 @@ class SketchNoteScreen extends ConsumerStatefulWidget {
 class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
   final List<SketchLayer> _layers = [SketchLayer(name: 'Layer 1')];
   int _currentLayerIndex = 0;
-  List<DrawingPoint>? _currentStroke;
-  
-  // Use ValueNotifier for real-time drawing performance
-  final ValueNotifier<int> _strokeUpdateNotifier = ValueNotifier(0);
 
   DrawingTool _currentTool = DrawingTool.pen;
   Color _currentColor = Colors.black;
@@ -120,113 +116,26 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
 
   @override
   void dispose() {
-    _strokeUpdateNotifier.dispose();
     super.dispose();
   }
 
-  void _onPointerDown(PointerDownEvent event) {
+  void _onStrokeComplete(Stroke stroke) {
     setState(() {
-      _currentStroke = [
-        DrawingPoint(
-          offset: event.localPosition,
-          pressure: event.pressure.clamp(0.0, 1.0),
-          timestamp: DateTime.now(),
-        ),
-      ];
+      _layers[_currentLayerIndex].strokes.add(stroke);
+      
+      // Add to history
+      _history.add(List.from(_layers.map((l) => SketchLayer(
+        strokes: List.from(l.strokes),
+        visible: l.visible,
+        opacity: l.opacity,
+        name: l.name,
+      ))));
+      _historyIndex = _history.length - 1;
+      if (_history.length > 50) {
+        _history.removeAt(0);
+        _historyIndex--;
+      }
     });
-  }
-
-  void _onPointerMove(PointerMoveEvent event) {
-    if (_currentStroke != null) {
-      // Add point without setState for better performance
-      _currentStroke!.add(
-        DrawingPoint(
-          offset: event.localPosition,
-          pressure: event.pressure.clamp(0.0, 1.0),
-          timestamp: DateTime.now(),
-        ),
-      );
-      // Notify only the painter to repaint
-      _strokeUpdateNotifier.value++;
-    }
-  }
-
-  void _onPointerUp(PointerUpEvent event) {
-    if (_currentStroke != null && _currentStroke!.isNotEmpty) {
-      setState(() {
-        _layers[_currentLayerIndex].strokes.add(
-          Stroke(
-            points: _currentStroke!,
-            color: _currentColor,
-            width: _currentWidth,
-            tool: _currentTool,
-          ),
-        );
-        _currentStroke = null;
-        
-        // Add to history
-        _history.add(List.from(_layers.map((l) => SketchLayer(
-          strokes: List.from(l.strokes),
-          visible: l.visible,
-          opacity: l.opacity,
-          name: l.name,
-        ))));
-        _historyIndex = _history.length - 1;
-        if (_history.length > 50) {
-          _history.removeAt(0);
-          _historyIndex--;
-        }
-      });
-    }
-  }
-
-  void _onPointerCancel(PointerCancelEvent event) {
-    setState(() {
-      _currentStroke = null;
-    });
-  }
-
-  void _onPanStart(DragStartDetails details) {
-    setState(() {
-      _currentStroke = [
-        DrawingPoint(
-          offset: details.localPosition,
-          pressure: 0.5, // Default pressure for touch
-          timestamp: DateTime.now(),
-        ),
-      ];
-    });
-  }
-
-  void _onPanUpdate(DragUpdateDetails details) {
-    if (_currentStroke != null) {
-      setState(() {
-        _currentStroke!.add(
-          DrawingPoint(
-            offset: details.localPosition,
-            pressure: 0.5, // Default pressure for touch
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
-    }
-  }
-
-  void _onPanEnd(DragEndDetails details) {
-    if (_currentStroke != null && _currentStroke!.isNotEmpty) {
-      setState(() {
-        _layers[_currentLayerIndex].strokes.add(
-              Stroke(
-                points: _currentStroke!,
-                color: _currentColor,
-                width: _currentWidth,
-                tool: _currentTool,
-              ),
-            );
-        _currentStroke = null;
-      });
-      _saveHistory();
-    }
   }
 
   Future<void> _saveSketch() async {
@@ -426,28 +335,12 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
           GestureDetector(
             // Allow horizontal drag for tab switching
             onHorizontalDragStart: (_) {},
-            child: Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerDown: _onPointerDown,
-              onPointerMove: _onPointerMove,
-              onPointerUp: _onPointerUp,
-              onPointerCancel: _onPointerCancel,
-              child: Container(
-                color: Colors.white,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: _strokeUpdateNotifier,
-                  builder: (context, _, __) => CustomPaint(
-                    painter: SketchPainter(
-                      layers: _layers,
-                      currentStroke: _currentStroke,
-                      currentTool: _currentTool,
-                      currentColor: _currentColor,
-                      currentWidth: _currentWidth,
-                    ),
-                    size: Size.infinite,
-                  ),
-                ),
-              ),
+            child: _SketchCanvas(
+              layers: _layers,
+              currentTool: _currentTool,
+              currentColor: _currentColor,
+              currentWidth: _currentWidth,
+              onStrokeComplete: _onStrokeComplete,
             ),
           ),
 
@@ -676,6 +569,101 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Separate widget for canvas to isolate setState calls
+class _SketchCanvas extends StatefulWidget {
+  final List<SketchLayer> layers;
+  final DrawingTool currentTool;
+  final Color currentColor;
+  final double currentWidth;
+  final Function(Stroke) onStrokeComplete;
+
+  const _SketchCanvas({
+    required this.layers,
+    required this.currentTool,
+    required this.currentColor,
+    required this.currentWidth,
+    required this.onStrokeComplete,
+  });
+
+  @override
+  State<_SketchCanvas> createState() => _SketchCanvasState();
+}
+
+class _SketchCanvasState extends State<_SketchCanvas> {
+  List<DrawingPoint>? _currentStroke;
+
+  void _onPointerDown(PointerDownEvent event) {
+    setState(() {
+      _currentStroke = [
+        DrawingPoint(
+          offset: event.localPosition,
+          pressure: event.pressure.clamp(0.0, 1.0),
+          timestamp: DateTime.now(),
+        ),
+      ];
+    });
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (_currentStroke != null) {
+      setState(() {
+        _currentStroke!.add(
+          DrawingPoint(
+            offset: event.localPosition,
+            pressure: event.pressure.clamp(0.0, 1.0),
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (_currentStroke != null && _currentStroke!.isNotEmpty) {
+      final stroke = Stroke(
+        points: _currentStroke!,
+        color: widget.currentColor,
+        width: widget.currentWidth,
+        tool: widget.currentTool,
+      );
+      widget.onStrokeComplete(stroke);
+      setState(() {
+        _currentStroke = null;
+      });
+    }
+  }
+
+  void _onPointerCancel(PointerCancelEvent event) {
+    setState(() {
+      _currentStroke = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerCancel,
+      child: Container(
+        color: Colors.white,
+        child: CustomPaint(
+          painter: SketchPainter(
+            layers: widget.layers,
+            currentStroke: _currentStroke,
+            currentTool: widget.currentTool,
+            currentColor: widget.currentColor,
+            currentWidth: widget.currentWidth,
+          ),
+          size: Size.infinite,
+        ),
       ),
     );
   }
