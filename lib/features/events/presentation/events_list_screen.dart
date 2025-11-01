@@ -45,9 +45,32 @@ class EventsListScreen extends ConsumerWidget {
 
           return CustomScrollView(
             slivers: [
+              // Swipe hint at top
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.arrow_back,
+                        size: 16,
+                        color: RetroTheme.sageBrown.withOpacity(0.6),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Swipe left to delete',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: RetroTheme.sageBrown.withOpacity(0.6),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               SliverPadding(
                 padding: const EdgeInsets.only(
-                  top: 16,
                   left: 16,
                   right: 16,
                   bottom: 100,

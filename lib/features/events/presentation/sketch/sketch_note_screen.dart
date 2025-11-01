@@ -170,6 +170,12 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
     }
   }
 
+  void _onPointerCancel(PointerCancelEvent event) {
+    setState(() {
+      _currentStroke = null;
+    });
+  }
+
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _currentStroke = [
@@ -406,23 +412,28 @@ class _SketchNoteScreenState extends ConsumerState<SketchNoteScreen> {
       ),
       body: Stack(
         children: [
-          // Drawing canvas
-          Listener(
-            behavior: HitTestBehavior.opaque,
-            onPointerDown: _onPointerDown,
-            onPointerMove: _onPointerMove,
-            onPointerUp: _onPointerUp,
-            child: Container(
-              color: Colors.white,
-              child: CustomPaint(
-                painter: SketchPainter(
-                  layers: _layers,
-                  currentStroke: _currentStroke,
-                  currentTool: _currentTool,
-                  currentColor: _currentColor,
-                  currentWidth: _currentWidth,
+          // Drawing canvas - allow horizontal swipes for tab switching
+          GestureDetector(
+            // Allow horizontal drag for tab switching
+            onHorizontalDragStart: (_) {},
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerDown: _onPointerDown,
+              onPointerMove: _onPointerMove,
+              onPointerUp: _onPointerUp,
+              onPointerCancel: _onPointerCancel,
+              child: Container(
+                color: Colors.white,
+                child: CustomPaint(
+                  painter: SketchPainter(
+                    layers: _layers,
+                    currentStroke: _currentStroke,
+                    currentTool: _currentTool,
+                    currentColor: _currentColor,
+                    currentWidth: _currentWidth,
+                  ),
+                  size: Size.infinite,
                 ),
-                size: Size.infinite,
               ),
             ),
           ),
